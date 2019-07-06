@@ -22,39 +22,55 @@ client.on('ready', () => console.log('I am ready!'));
 
 // Record presence changes of users
 client.on('presenceUpdate', (oldMember, newMember) => {
-	const { user } = newMember;
-	if (!oldMember.presence.game && newMember.presence.game) {
-		console.log(`[${newMember.guild.name}] ${user.username} is now ${parsePresenceType(newMember.presence.game.type)} ${newMember.presence.game.name}`);
+	const { guild: newGuild, user: newUser, presence: newPresence } = newMember;
+	const { guild: oldGuild, user: oldUser, presence: oldPresence } = oldMember;
+	// User started an activity
+	if (!oldPresence.game && newPresence.game) {
+		console.log(`[${newGuild.name}] ${newUser.username} is now ${parsePresenceType(newPresence.game.type)} ${newPresence.game.name}`);
 	}
-	else if (oldMember.presence.game && !newMember.presence.game) {
-		console.log(`[${newMember.guild.name}] ${user.username} has stopped ${parsePresenceType(oldMember.presence.game.type)} ${oldMember.presence.game.name}`);
+	// User stopped an activity
+	else if (oldPresence.game && !newPresence.game) {
+		console.log(`[${oldGuild.name}] ${oldUser.username} has stopped ${parsePresenceType(oldPresence.game.type)} ${oldPresence.game.name}`);
 	}
-	else if (oldMember.presence.game && !oldMember.presence.game.equals(newMember.presence.game)) {
-		console.log(`[${newMember.guild.name}] ${user.username} is now ${parsePresenceType(newMember.presence.game.type)} ${newMember.presence.game.name}`);
+	// User changed activities
+	else if (oldPresence.game && !oldPresence.game.equals(newPresence.game)) {
+		console.log(`[${newGuild.name}] ${newUser.username} is now ${parsePresenceType(newPresence.game.type)} ${newPresence.game.name}`);
+	}
+	// User changed status
+	else if (oldPresence.status !== newPresence.status) {
+		console.log(`[${newGuild.name}] ${newUser.username} is now ${newPresence.status}`);
 	}
 });
 
 // Record messages and the channel it was sent in
 client.on('message', message => {
-	console.log(`[${message.guild.name}] ${message.author.username} said ${message.content} (in ${message.channel.name})`);
+	const { guild, author, content, channel } = message;
+	if (content) {
+		console.log(`[${guild.name}] ${author.username} said ${content} (in ${channel.name})`);
+	}
 });
 
 // Record emoji reactions
 client.on('messageReactionAdd', (messageReaction, user) => {
-	console.log(`[${messageReaction.message.guild.name}] ${user.username} reacted with ${messageReaction.emoji.name}`);
+	const { message, emoji } = messageReaction;
+	console.log(`[${message.guild.name}] ${user.username} reacted with ${emoji.name}`);
 });
 
 // Record voice channel updates
 client.on('voiceStateUpdate', (oldMember, newMember) => {
-	const { user } = newMember;
-	if (!oldMember.voiceChannel && newMember.voiceChannel) {
-		console.log(`[${newMember.guild.name}] ${user.username} has joined voice channel ${newMember.voiceChannel.name}`);
+	const { guild: newGuild, user: newUser, voiceChannel: newVoice } = newMember;
+	const { guild: oldGuild, user: oldUser, voiceChannel: oldVoice } = oldMember;
+	// User joins a voice channel
+	if (!oldVoice && newVoice) {
+		console.log(`[${newGuild.name}] ${newUser.username} has joined voice channel ${newVoice.name}`);
 	}
-	else if (oldMember.voiceChannel && !newMember.voiceChannel) {
-		console.log(`[${newMember.guild.name}] ${user.username} has left voice channel ${oldMember.voiceChannel.name}`);
+	// User leaves a voice channel
+	else if (oldVoice && !newVoice) {
+		console.log(`[${oldGuild.name}] ${oldUser.username} has left voice channel ${oldVoice.name}`);
 	}
-	else if (oldMember.voiceChannel && newMember.voiceChannel && !oldMember.voiceChannel.equals(newMember.voiceChannel)) {
-		console.log(`[${newMember.guild.name}] ${user.username} has joined voice channel ${newMember.voiceChannel.name}`);
+	// User switches to another voice channel
+	else if (oldVoice && newVoice && !oldVoice.equals(newVoice)) {
+		console.log(`[${newGuild.name}] ${newUser.username} has joined voice channel ${newVoice.name}`);
 	}
 });
 

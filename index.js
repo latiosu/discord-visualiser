@@ -12,16 +12,19 @@ dotenv.config();
 const Discord = require('discord.js');
 
 // Create an instance of a Discord client
-const client = new Discord.Client();
+const discordClient = new Discord.Client();
+
+// Create a text visualiser for testing
+const textVisualiser = require('./text-visualiser');
 
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
  * received from Discord
  */
-client.on('ready', () => console.log('I am ready!'));
+discordClient.on('ready', () => console.log('Discord Bot is ready'));
 
 // Record presence changes of users
-client.on('presenceUpdate', (oldMember, newMember) => {
+discordClient.on('presenceUpdate', (oldMember, newMember) => {
 	const { guild: newGuild, user: newUser, presence: newPresence } = newMember;
 	const { guild: oldGuild, user: oldUser, presence: oldPresence } = oldMember;
 	// User started an activity
@@ -43,7 +46,7 @@ client.on('presenceUpdate', (oldMember, newMember) => {
 });
 
 // Record messages and the channel it was sent in
-client.on('message', message => {
+discordClient.on('message', message => {
 	const { guild, author, content, channel } = message;
 	if (content) {
 		console.log(`[${guild.name}] ${author.username} said ${content} (in ${channel.name})`);
@@ -51,13 +54,13 @@ client.on('message', message => {
 });
 
 // Record emoji reactions
-client.on('messageReactionAdd', (messageReaction, user) => {
+discordClient.on('messageReactionAdd', (messageReaction, user) => {
 	const { message, emoji } = messageReaction;
 	console.log(`[${message.guild.name}] ${user.username} reacted with ${emoji.name}`);
 });
 
 // Record voice channel updates
-client.on('voiceStateUpdate', (oldMember, newMember) => {
+discordClient.on('voiceStateUpdate', (oldMember, newMember) => {
 	const { guild: newGuild, user: newUser, voiceChannel: newVoice } = newMember;
 	const { guild: oldGuild, user: oldUser, voiceChannel: oldVoice } = oldMember;
 	// User joins a voice channel
@@ -82,4 +85,22 @@ function parsePresenceType(type) {
 	else { return 'doing something'; }
 }
 
-client.login(process.env.DISCORD_TOKEN);
+discordClient.login(process.env.DISCORD_TOKEN);
+
+// // Data Broadcasting Server
+// const server = require('http').createServer();
+// const io = require('socket.io')(server);
+// io.on('connection', client => {
+// 	console.log('=Server= Client connected');
+// 	client.on('event', data => {
+// 		console.log(`=Server= Data: ${data}`);
+// 	});
+// 	client.on('disconnect', () => {
+// 		console.log('=Server= Client disconnected');
+// 	});
+// });
+
+// server.listen(3000);
+console.log('Server listening on port: 3000');
+
+textVisualiser.start();

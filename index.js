@@ -4,18 +4,19 @@
 
 // Import dotenv module
 const dotenv = require('dotenv');
-
 // Load configuration from .env file
 dotenv.config();
 
 // Import discord.js module
 const Discord = require('discord.js');
-
 // Create an instance of a Discord client
 const discordClient = new Discord.Client();
 
 // Create a text visualiser for testing
 const textVisualiser = require('./text-visualiser');
+
+// Users in a guild { guild1_id: { guild1 }, guild2_id: { guild2 } }
+const guilds = {};
 
 /**
  * The ready event is vital, it means that only _after_ this will your bot start reacting to information
@@ -43,6 +44,9 @@ discordClient.on('presenceUpdate', (oldMember, newMember) => {
 	else if (oldPresence.status !== newPresence.status) {
 		console.log(`[${newGuild.name}] ${newUser.username} is now ${newPresence.status}`);
 	}
+
+	guilds[newGuild.id] = newGuild;
+	textVisualiser.updateMembers(newGuild.members);
 });
 
 // Record messages and the channel it was sent in
@@ -75,6 +79,9 @@ discordClient.on('voiceStateUpdate', (oldMember, newMember) => {
 	else if (oldVoice && newVoice && !oldVoice.equals(newVoice)) {
 		console.log(`[${newGuild.name}] ${newUser.username} has joined voice channel ${newVoice.name}`);
 	}
+
+	guilds[newGuild.id] = newGuild;
+	textVisualiser.updateMembers(newGuild.members);
 });
 
 function parsePresenceType(type) {
@@ -101,6 +108,6 @@ discordClient.login(process.env.DISCORD_TOKEN);
 // });
 
 // server.listen(3000);
-console.log('Server listening on port: 3000');
+// console.log('Server listening on port: 3000');
 
 textVisualiser.start();

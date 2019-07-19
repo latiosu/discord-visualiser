@@ -59,7 +59,7 @@ async function waitUntilData() {
 		renderWorld();
 
 		visualiserReady = true;
-		console.log('World visualiser is ready');
+		console.log('Text visualiser is ready');
 	}
 }
 

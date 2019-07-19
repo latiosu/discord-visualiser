@@ -1,19 +1,15 @@
 /**
  * Reads the state of the server and generate a visualisation.
  */
+module.exports = {
+	connect: connect,
+};
 
-// Import dotenv module
-const dotenv = require('dotenv');
-// Load configuration from .env file
-dotenv.config();
-
-// Import discord.js module
 const Discord = require('discord.js');
-// Create an instance of a Discord client
-const discordClient = new Discord.Client();
-
-// Create a text visualiser for testing
 const textVisualiser = require('./text-visualiser');
+const webVisualiser = require('./web-visualiser');
+
+const discordClient = new Discord.Client();
 
 // Users in a guild { guild1_id: { guild1 }, guild2_id: { guild2 } }
 const guilds = {};
@@ -92,22 +88,11 @@ function parsePresenceType(type) {
 	else { return 'doing something'; }
 }
 
-discordClient.login(process.env.DISCORD_TOKEN);
+// Required to connect as a user after OAuth2 authentication returns their access token
+function connect(token) {
+	console.log(`Authenticating with token: ${token}`);
+	discordClient.login(token).catch(err => console.log(err));
+}
 
-// // Data Broadcasting Server
-// const server = require('http').createServer();
-// const io = require('socket.io')(server);
-// io.on('connection', client => {
-// 	console.log('=Server= Client connected');
-// 	client.on('event', data => {
-// 		console.log(`=Server= Data: ${data}`);
-// 	});
-// 	client.on('disconnect', () => {
-// 		console.log('=Server= Client disconnected');
-// 	});
-// });
-
-// server.listen(3000);
-// console.log('Server listening on port: 3000');
-
-textVisualiser.start();
+// textVisualiser.start();
+webVisualiser.start();

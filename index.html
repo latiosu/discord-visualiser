@@ -1,7 +1,56 @@
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io('http://localhost:3000');
-  socket.on('connect', function(){});
-  socket.on('event', function(data){});
-  socket.on('disconnect', function(){});
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>My First OAuth2 App</title>
+</head>
+<body>
+	<div id="info">
+		Hoi!
+	</div>
+	<a id="login" style="display: none;" href="https://discordapp.com/api/oauth2/authorize?client_id=596748084525137920&redirect_uri=http%3A%2F%2Flocalhost%3A53134&response_type=code&scope=identify">Identify Yourself</a>
+	<script>
+		function generateRandomString() {
+			const array = new Uint32Array(10);
+			window.crypto.getRandomValues(array);
+			return array.join('');
+		}
+
+		window.onload = () => {
+			const fragment = new URLSearchParams(window.location.hash.slice(1));
+
+			if (fragment.has("access_token")) {
+				const accessToken = fragment.get('access_token');
+				const tokenType = fragment.get('token_type');
+				const urlState = fragment.get('state');
+				const stateParameter = localStorage.getItem('stateParameter');
+
+				if (stateParameter !== atob(decodeURIComponent(urlState))) {
+					return console.log('You may have been clickjacked!');
+				}
+
+				fetch('https://discordapp.com/api/users/@me', {
+					headers: {
+						authorization: `${tokenType} ${accessToken}`
+					}
+				})
+					.then(res => res.json())
+					.then(response => {
+						const { username, discriminator } = response;
+						document.getElementById('info').innerText += ` ${username}#${discriminator}`;
+					})
+					.catch(console.error);
+
+			}
+			else {
+				document.getElementById('login').style.display = 'block';
+			}
+
+			// generate and store the string
+			const randStr = generateRandomString();
+			localStorage.setItem('stateParameter', randStr);
+
+			document.getElementById('login').href += `&state=${btoa(randStr)}`;
+		}
+	</script>
+</body>
+</html>
